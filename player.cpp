@@ -75,29 +75,39 @@ int Player::board_score(Board *board, Move *move)
     return score + (abs(score) / 2) * weights[move->getX()][move->getY()];
 }
 
+int Player::minimax_score(Board *board)
+{
+    return board->count(my_side) - board->count(opp_side);
+}
+
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    my_board->doMove(opponentsMove, opp_side);
-    Move *best_move = nullptr;
-    int max_score = -100;
-    if (my_board->hasMoves(my_side))
-    {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Move *move = new Move(i, j);
-                if (my_board->checkMove(move, my_side)) {
-                    Board *temp = my_board->copy();
-                    temp->doMove(move, my_side);
-                    int score = board_score(temp, move);
-                    if (score > max_score)
-                    {
-                        max_score = score;
-                        best_move = move;
+    if (testingMinimax) {
+
+    }
+    else {
+        my_board->doMove(opponentsMove, opp_side);
+        Move *best_move = nullptr;
+        int max_score = -100;
+        if (my_board->hasMoves(my_side))
+        {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    Move *move = new Move(i, j);
+                    if (my_board->checkMove(move, my_side)) {
+                        Board *temp = my_board->copy();
+                        temp->doMove(move, my_side);
+                        int score = board_score(temp, move);
+                        if (score > max_score)
+                        {
+                            max_score = score;
+                            best_move = move;
+                        }
+                        delete temp;
                     }
-                    delete temp;
                 }
             }
         }
+        my_board->doMove(best_move, my_side);
+        return best_move;
     }
-    my_board->doMove(best_move, my_side);
-    return best_move;
 }
