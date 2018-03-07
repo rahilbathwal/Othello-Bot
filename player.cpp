@@ -43,13 +43,12 @@ Player::~Player() {
  * return nullptr.
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    /*
-     * TODO: Implement how moves your AI should play here. You should first
-     * process the opponent's opponents move before calculating your own move
-     */
 
-    /* Comment - we need to do this move function*/
-    /* Comment - yes we do*/
-
-    return nullptr;
+    my_board->doMove(opponentsMove, opp_side)
+    Move *move = nullptr;
+    if (my_board->hasMoves(my_side))
+    {
+        my_board->doMove(move, my_side);
+    }
+    return move;
 }
