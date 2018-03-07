@@ -51,5 +51,18 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     /* Comment - we need to do this move function*/
     /* Comment - yes we do*/
 
-    return nullptr;
+    my_board->doMove(opponentsMove, opp_side)
+    
+    
+    Move *move = nullptr;
+    /* TODO find the best move */
+    if (my_board->hasMoves(my_side))
+    {
+        
+        my_board->doMove(move, my_side); 
+    }
+
+    
+    return move;
+
 }
