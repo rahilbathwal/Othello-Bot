@@ -20,7 +20,7 @@ public:
     Board();
     ~Board();
     Board *copy();
-
+    bool real_get(Side side, int x, int y);
     bool isDone();
     bool hasMoves(Side side);
     bool checkMove(Move *m, Side side);
