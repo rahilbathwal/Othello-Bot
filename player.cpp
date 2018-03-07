@@ -80,6 +80,30 @@ int Player::minimax_score(Board *board)
     return board->count(my_side) - board->count(opp_side);
 }
 
+int Player::opp_move(Board *board, Side side)
+{
+    int min_score = INT_MAX;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            Move *move = new Move(i, j)
+            if (board->checkMove(move, side))
+            {
+                Board *temp = board->copy();
+                temp->doMove(move, side);
+                int score = board_score(temp, move);
+                if(score < min_score)
+                {
+                    min_score = score;
+                }
+                delete temp;
+            }
+        }
+    }
+    return min_score;
+}
+
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     if (testingMinimax) {
 
