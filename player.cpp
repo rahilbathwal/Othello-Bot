@@ -88,12 +88,12 @@ int Player::opp_move(Board *board, Side side)
     {
         for (int j = 0; j < 8; j++)
         {
-            Move *move = new Move(i, j)
+            Move *move = new Move(i, j);
             if (board->checkMove(move, side))
             {
                 Board *temp = board->copy();
                 temp->doMove(move, side);
-                int score = board_score(temp, move);
+                int score = minimax_score(temp);
                 if(score < min_score)
                 {
                     min_score = score;
@@ -122,6 +122,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                         max_score = score;
                         best_move = move;
                     }
+                    delete temp;
                 }
             }
         }
