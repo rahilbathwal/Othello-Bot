@@ -1,5 +1,6 @@
 #include "player.hpp"
 #include "board.hpp"
+#include <bitset>
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -45,17 +46,21 @@ Player::~Player() {
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     my_board->doMove(opponentsMove, opp_side);
     Move *move = nullptr;
+    int weights[8][8] = [[7,2,5,4,4,5,2,7],[2,1,3,3,3,3,1,2],[5,3,6,5,5,6,3,5],
+    [4,3,5,6,6,5,3,4],[4,3,5,6,6,5,3,4],[5,3,6,5,5,6,3,5],[2,1,3,3,3,3,1,2],
+    [7,2,5,4,4,5,2,7]];
+    int max_score = 0;
     if (my_board->hasMoves(my_side))
     {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 move = new Move(i, j);
                 if (my_board->checkMove(move, my_side)) {
-                    my_board->doMove(move, my_side);
-                    return move;
+                    if ()
                 }
             }
         }
     }
+    my_board->doMove(move, my_side);
     return move;
 }
