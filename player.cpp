@@ -28,6 +28,7 @@ Player::Player(Side side) {
  * Destructor for the player.
  */
 Player::~Player() {
+    delete my_board;
 }
 
 /*
@@ -45,22 +46,28 @@ Player::~Player() {
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     my_board->doMove(opponentsMove, opp_side);
-    Move *move = nullptr;
-    int weights[8][8] = [[7,2,5,4,4,5,2,7],[2,1,3,3,3,3,1,2],[5,3,6,5,5,6,3,5],
-    [4,3,5,6,6,5,3,4],[4,3,5,6,6,5,3,4],[5,3,6,5,5,6,3,5],[2,1,3,3,3,3,1,2],
-    [7,2,5,4,4,5,2,7]];
+    Move *best_move = nullptr;
     int max_score = 0;
     if (my_board->hasMoves(my_side))
     {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                move = new Move(i, j);
+                Move *move = new Move(i, j);
                 if (my_board->checkMove(move, my_side)) {
-                    if ()
+                    Board *temp = my_board->copy();
+                    temp->doMove(move, my_side);
+                    int score = board_score(temp);
+                    if (score > max_score)
+                    {
+                        max_score = score;
+                        best_move = move;
+                    }
+                    delete temp;
                 }
+                delete move;
             }
         }
     }
-    my_board->doMove(move, my_side);
-    return move;
+    my_board->doMove(best_move, my_side);
+    return best_move;
 }
