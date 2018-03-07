@@ -1,6 +1,7 @@
 #include "player.hpp"
 #include "board.hpp"
 #include <bitset>
+#include<limits.h>
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -82,12 +83,31 @@ int Player::minimax_score(Board *board)
 
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     if (testingMinimax) {
-
+        my_board->doMove(opponentsMove, opp_side);
+        Move *best_move = nullptr;
+        int max_score = INT_MIN;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Move *move = new Move(i, j);
+                if (my_board->checkMove(move, my_side)) {
+                    Board *temp = my_board->copy();
+                    temp->doMove(move, my_side);
+                    int score = opp_move(temp, opp_side);
+                    if (score > max_score)
+                    {
+                        max_score = score;
+                        best_move = move;
+                    }
+                }
+            }
+        }
+        my_board->doMove(best_move, my_side);
+        return best_move;
     }
     else {
         my_board->doMove(opponentsMove, opp_side);
         Move *best_move = nullptr;
-        int max_score = -100;
+        int max_score = INT_MIN;
         if (my_board->hasMoves(my_side))
         {
             for (int i = 0; i < 8; i++) {
