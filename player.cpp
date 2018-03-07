@@ -43,12 +43,19 @@ Player::~Player() {
  * return nullptr.
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-
-    my_board->doMove(opponentsMove, opp_side)
+    my_board->doMove(opponentsMove, opp_side);
     Move *move = nullptr;
     if (my_board->hasMoves(my_side))
     {
-        my_board->doMove(move, my_side);
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                move = new Move(i, j);
+                if (my_board->checkMove(move, my_side)) {
+                    my_board->doMove(move, my_side);
+                    return move;
+                }
+            }
+        }
     }
     return move;
 }
