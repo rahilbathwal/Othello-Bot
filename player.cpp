@@ -45,7 +45,7 @@ Player::~Player() {
  * return nullptr.
  */
 
-int Player::board_score(Board *board)
+/*int Player::board_score(Board *board)
 {
     int weights[8][8] = {{7,2,5,4,4,5,2,7},{2,1,3,3,3,3,1,2},{5,3,6,5,5,6,3,5},
     {4,3,5,6,6,5,3,4},{4,3,5,6,6,5,3,4},{5,3,6,5,5,6,3,5},{2,1,3,3,3,3,1,2},
@@ -53,7 +53,7 @@ int Player::board_score(Board *board)
     int score = 0;
     for (int i = 0; i < 8; i++)
     {
-        for (int j; j < 8; j++)
+        for (int j = 0; j < 8; j++)
         {
             if (board->real_get(my_side, i, j))
             {
@@ -65,13 +65,20 @@ int Player::board_score(Board *board)
             }
         }
     }
-    return score;
+    return score;*/
+int Player::board_score(Board *board, Move *move)
+{
+    int weights[8][8] = {{1,-1,0,0,0,0,-1,1},{-1,-1,0,0,0,0,-1,-1},{0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{-1,-1,0,0,0,0,-1,-1},
+    {1,-1,0,0,0,0,-1,1}};
+    int score = board->count(my_side) - board->count(opp_side);
+    return score + (abs(score) / 2) * weights[move->getX()][move->getY()];
 }
 
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     my_board->doMove(opponentsMove, opp_side);
     Move *best_move = nullptr;
-    int max_score = 0;
+    int max_score = -100;
     if (my_board->hasMoves(my_side))
     {
         for (int i = 0; i < 8; i++) {
@@ -80,7 +87,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 if (my_board->checkMove(move, my_side)) {
                     Board *temp = my_board->copy();
                     temp->doMove(move, my_side);
-                    int score = board_score(temp);
+                    int score = board_score(temp, move);
                     if (score > max_score)
                     {
                         max_score = score;
@@ -88,7 +95,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                     }
                     delete temp;
                 }
-                delete move;
             }
         }
     }
