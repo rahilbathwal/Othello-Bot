@@ -1,4 +1,5 @@
 #include "player.hpp"
+#include "board.hpp"
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -9,11 +10,17 @@ Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
 
-    /*
-     * TODO: Do any initialization you need to do here (setting up the board,
-     * precalculating things, etc.) However, remember that you will only have
-     * 30 seconds.
-     */
+    if (side == WHITE)
+    {
+        my_side = side;
+        opp_side = BLACK;
+    }
+    else
+    {
+        my_side = side;
+        opp_side = WHITE;
+    }
+    my_board = new Board();
 }
 
 /*
