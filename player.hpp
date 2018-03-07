@@ -19,7 +19,6 @@ public:
     int board_score(Board *board, Move *move);
     int minimax_score(Board *board)
     int opp_move(Board *board, Side side);
-
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
 };
