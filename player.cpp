@@ -32,18 +32,8 @@ Player::~Player() {
     delete my_board;
 }
 
-/*
- * Compute the next move given the opponent's last move. Your AI is
- * expected to keep track of the board on its own. If this is the first move,
- * or if the opponent passed on the last move, then opponentsMove will be
- * nullptr.
- *
- * msLeft represents the time your AI has left for the total game, in
- * milliseconds. doMove() must take no longer than msLeft, or your AI will
- * be disqualified! An msLeft value of -1 indicates no time limit.
- *
- * The move returned must be legal; if there are no valid moves for your side,
- * return nullptr.
+/* Compute the board score using a basic heuristic which prioritises the
+ * corner pieces.
  */
 
 int Player::board_score(Board *board, Move *move)
@@ -55,10 +45,16 @@ int Player::board_score(Board *board, Move *move)
     return score + (abs(score) / 2) * weights[move->getX()][move->getY()];
 }
 
+/* Compute the board score for the minimax algorithm using a simple heuristic */
+
 int Player::minimax_score(Board *board)
 {
     return board->count(my_side) - board->count(opp_side);
 }
+
+/* Compute the opposition's best move for the second depth of the minimax
+ * algorithm.
+ */
 
 int Player::opp_move(Board *board, Side side)
 {
@@ -83,6 +79,20 @@ int Player::opp_move(Board *board, Side side)
     }
     return min_score;
 }
+
+/*
+ * Compute the next move given the opponent's last move. Your AI is
+ * expected to keep track of the board on its own. If this is the first move,
+ * or if the opponent passed on the last move, then opponentsMove will be
+ * nullptr.
+ *
+ * msLeft represents the time your AI has left for the total game, in
+ * milliseconds. doMove() must take no longer than msLeft, or your AI will
+ * be disqualified! An msLeft value of -1 indicates no time limit.
+ *
+ * The move returned must be legal; if there are no valid moves for your side,
+ * return nullptr.
+ */
 
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
     if (testingMinimax) {
