@@ -46,27 +46,6 @@ Player::~Player() {
  * return nullptr.
  */
 
-/*int Player::board_score(Board *board)
-{
-    int weights[8][8] = {{7,2,5,4,4,5,2,7},{2,1,3,3,3,3,1,2},{5,3,6,5,5,6,3,5},
-    {4,3,5,6,6,5,3,4},{4,3,5,6,6,5,3,4},{5,3,6,5,5,6,3,5},{2,1,3,3,3,3,1,2},
-    {7,2,5,4,4,5,2,7}};
-    int score = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            if (board->real_get(my_side, i, j))
-            {
-                score += weights[i][j];
-            }
-            if (board->real_get(opp_side, i, j))
-            {
-                score -= weights[i][j];
-            }
-        }
-    }
-    return score;*/
 int Player::board_score(Board *board, Move *move)
 {
     int weights[8][8] = {{1,-1,0,0,0,0,-1,1},{-1,-1,0,0,0,0,-1,-1},{0,0,0,0,0,0,0,0},

@@ -15,7 +15,6 @@ public:
     Side opp_side;
     Board *my_board;
     Move *doMove(Move *opponentsMove, int msLeft);
-    /*int board_score(Board *board);*/
     int board_score(Board *board, Move *move);
     int minimax_score(Board *board);
     int opp_move(Board *board, Side side);
