@@ -36,18 +36,16 @@ Player::~Player() {
  * corner pieces.
  */
 
-int Player::CompleteHeuristic(Board *board, Move *move)
+int Player::CompleteHeuristic(Board *board)
 {
-    Board *temp = board->copy();
-    temp->doMove(move, my_side);
     double value = 0.0;
 
-    int position = board_score(temp, move);
-    int piece = Piece(temp, move);
-    double mobility = Mobility(temp, move);
-    double frontier = Frontier(temp, move);
+    int position = Position(board);
+    int piece = Piece(board);
+    double mobility = Mobility(board);
+    double frontier = Frontier(board);
 
-    if (counter < 50)
+    if (counter < 20)
     {
         value += 2 * position + 0.05 * mobility - frontier - piece;
     }
@@ -55,11 +53,10 @@ int Player::CompleteHeuristic(Board *board, Move *move)
     {
 		value += 2 * position + 0.05 * mobility + 0.4 * frontier + 0.4 * piece;
     }
-
     return value;
 }
 
-int Player::Piece(Board * board, Move *move)
+int Player::Piece(Board * board)
 {
 	double pieceDiff;
     int myCount, opCount;
@@ -74,7 +71,7 @@ int Player::Piece(Board * board, Move *move)
         myCount = board->countBlack();
         opCount = board->countWhite();
     }
-    
+
     if (myCount + opCount != 0)
     {
        pieceDiff = 100 * (myCount - opCount) / (myCount + opCount);
@@ -86,7 +83,7 @@ int Player::Piece(Board * board, Move *move)
     return pieceDiff;
 }
 
-double Player::Mobility(Board *board, Move *move)
+double Player::Mobility(Board *board)
 {
 	int myCount = 0;
 	int opCount = 0;
@@ -113,10 +110,10 @@ double Player::Mobility(Board *board, Move *move)
     else
     {
         return 0;
-    }   
+    }
 }
 
-double Player::Frontier(Board *board, Move *move)
+double Player::Frontier(Board *board)
 {
 	int xChanges[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
     int yChanges[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
@@ -158,18 +155,24 @@ double Player::Frontier(Board *board, Move *move)
     return frontier;
 }
 
-int Player::board_score(Board *board, Move *move)
-{
-    int weights[8][8] = {{3,-2,2,2,2,2,-2,3},{-2,-3,1,1,1,1,-3,-2},{2,1,1,1,1,1,1,2}, {2,1,1,1,1,1,1,2},{2,1,1,1,1,1,1,2},{2,1,1,1,1,1,1,2},{-2,-3,1,1,1,1,-3,-2}, {3,-2,2,2,2,2,-2,3}};
-    int score = board->count(my_side) - board->count(opp_side);
-    return score * weights[move->getX()][move->getY()];
-}
+/* Compute the board score for the algorithm using board positions */
 
-/* Compute the board score for the minimax algorithm using a simple heuristic */
-
-int Player::minimax_score(Board *board)
+int Player::Position(Board *board)
 {
-    return board->count(my_side) - board->count(opp_side);
+    int score = 0;
+    int weights[8][8] = {{100,1,5,5,5,5,1,100},{1,0,2,2,2,2,0,1},{5,2,6,6,6,6,2,5}, {5,2,6,7,7,6,2,5},{5,2,6,7,7,6,2,5},{5,2,6,6,6,6,2,5},
+    {1,0,2,2,2,2,0,1}, {100,1,5,5,5,5,1,100}};
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (board->real_get(my_side, i, j) == 1) {
+                score += weights[i][j];
+            }
+            else if (board->real_get(opp_side, i, j) == 1) {
+                score -= weights[i][j];
+            }
+        }
+    }
+    return score;
 }
 
 /*
@@ -187,9 +190,12 @@ int Player::minimax_score(Board *board)
  */
 
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    int depth = 5;
+    int depth = 7;
     int alpha = INT_MIN;
     int beta = INT_MAX;
+    if (opponentsMove != nullptr) {
+        counter++;
+    }
     my_board->doMove(opponentsMove, opp_side);
     int max_score = INT_MIN;
     Move *best_move = nullptr;
@@ -199,7 +205,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if (my_board->checkMove(move, my_side)) {
                 Board *temp = my_board->copy();
                 temp->doMove(move, my_side);
-                int score = opp_move(temp, move, opp_side, depth, alpha, beta);
+                int score = alphabeta(temp, opp_side, depth, alpha, beta);
                 if (score >= max_score)
                 {
                     delete best_move;
@@ -221,12 +227,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     return best_move;
 }
 
-int Player::opp_move(Board *board, Move *move, Side side, int depth, int alpha, int beta)
+int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
 {
     if (depth == 0)
     {
-    	//return board_score(board, move);
-        return CompleteHeuristic(board, move);
+        return CompleteHeuristic(board);
     }
     if (side == my_side)
     {
@@ -238,45 +243,52 @@ int Player::opp_move(Board *board, Move *move, Side side, int depth, int alpha, 
                 {
                     Board *temp = board->copy();
                     temp->doMove(move, side);
-                    int score = opp_move(temp, move, opp_side, depth - 1, alpha, beta);
+                    int score = alphabeta(temp, opp_side, depth - 1, alpha, beta);
                     max_score = max(max_score, score);
                     alpha = max(max_score, alpha);
-                    if (beta <= alpha)
+                    if (alpha >= beta)
                     {
                         delete move;
                         delete temp;
-                        break;
+                        return max_score;
                     }
                     delete temp;
                 }
                 delete move;
             }
+        }
+        if (max_score == INT_MIN) {
+            int score = alphabeta(board, opp_side, depth - 1, alpha, beta);
+            return score;
         }
         return max_score;
     }
-    else
-    {
-        int min_score = INT_MAX;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Move *move = new Move(i, j);
-                if (board->checkMove(move, side)) {
-                    Board *temp = board->copy();
-                    temp->doMove(move, side);
-                    int score = opp_move(temp, move, my_side, depth - 1, alpha, beta);
-                    min_score = min(min_score, score);
-                    beta = min(min_score, beta);
-                    if (beta <= alpha)
-                    {
-                        delete move;
-                        delete temp;
-                        break;
-                    }
+
+    int min_score = INT_MAX;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move *move = new Move(i, j);
+            if (board->checkMove(move, side)) {
+                Board *temp = board->copy();
+                temp->doMove(move, side);
+                int score = alphabeta(temp, my_side, depth - 1, alpha, beta);
+                min_score = min(min_score, score);
+                beta = min(min_score, beta);
+                if (beta <= alpha)
+                {
+                    delete move;
                     delete temp;
+                    return min_score;
                 }
-                delete move;
+                delete temp;
             }
+            delete move;
         }
-        return min_score;
     }
+
+    if (min_score == INT_MAX) {
+        int score = alphabeta(board, my_side, depth - 1, alpha, beta);
+        return score;
+    }
+    return min_score;
 }
