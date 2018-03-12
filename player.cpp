@@ -38,11 +38,9 @@ Player::~Player() {
 
 int Player::board_score(Board *board, Move *move)
 {
-    int weights[8][8] = {{1,-1,0,0,0,0,-1,1},{-1,-1,0,0,0,0,-1,-1},{0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{-1,-1,0,0,0,0,-1,-1},
-    {1,-1,0,0,0,0,-1,1}};
+    int weights[8][8] = {{3,-2,2,2,2,2,-2,3},{-2,-3,1,1,1,1,-3,-2},{2,1,1,1,1,1,1,2}, {2,1,1,1,1,1,1,2},{2,1,1,1,1,1,1,2},{2,1,1,1,1,1,1,2},{-2,-3,1,1,1,1,-3,-2}, {3,-2,2,2,2,2,-2,3}};
     int score = board->count(my_side) - board->count(opp_side);
-    return score + (abs(score) / 2) * weights[move->getX()][move->getY()];
+    return score * weights[move->getX()][move->getY()];
 }
 
 /* Compute the board score for the minimax algorithm using a simple heuristic */
@@ -67,6 +65,9 @@ int Player::minimax_score(Board *board)
  */
 
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
+    int depth = 5;
+    int alpha = INT_MIN;
+    int beta = INT_MAX;
     my_board->doMove(opponentsMove, opp_side);
     int max_score = INT_MIN;
     Move *best_move = nullptr;
@@ -76,7 +77,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if (my_board->checkMove(move, my_side)) {
                 Board *temp = my_board->copy();
                 temp->doMove(move, my_side);
-                int score = opp_move(temp, opp_side, 1, INT_MIN, INT_MIN);
+                int score = opp_move(temp, move, opp_side, depth, alpha, beta);
                 if (score >= max_score)
                 {
                     delete best_move;
@@ -97,84 +98,61 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     return best_move;
 }
 
-int Player::opp_move(Board *board, Side side, int depth, int alpha, int beta)
+int Player::opp_move(Board *board, Move *move, Side side, int depth, int alpha, int beta)
 {
-    int max_depth = 7;
-    int min_score = INT_MAX;
-    int max_score = INT_MIN;
-    if (depth == max_depth)
+    if (depth == 0)
     {
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
+        return board_score(board, move);
+    }
+    if (side == my_side)
+    {
+        int max_score = INT_MIN;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 Move *move = new Move(i, j);
                 if (board->checkMove(move, side))
                 {
                     Board *temp = board->copy();
                     temp->doMove(move, side);
-                    int score = board_score(temp, move);
-                    if (side == my_side) {
-                        if (score > max_score) {
-                            max_score = score;
-                        }
-                    }
-                    else {
-                        if (score < min_score) {
-                            min_score = score;
-                        }
+                    int score = opp_move(temp, move, opp_side, depth - 1, alpha, beta);
+                    max_score = max(max_score, score);
+                    alpha = max(max_score, alpha);
+                    if (beta <= alpha)
+                    {
+                        delete move;
+                        delete temp;
+                        break;
                     }
                     delete temp;
                 }
                 delete move;
             }
         }
-        if (side == my_side)
-        {
-            return max_score;
+        return max_score;
+    }
+    else
+    {
+        int min_score = INT_MAX;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Move *move = new Move(i, j);
+                if (board->checkMove(move, side)) {
+                    Board *temp = board->copy();
+                    temp->doMove(move, side);
+                    int score = opp_move(temp, move, my_side, depth - 1, alpha, beta);
+                    min_score = min(min_score, score);
+                    beta = min(min_score, beta);
+                    if (beta <= alpha)
+                    {
+                        delete move;
+                        delete temp;
+                        break;
+                    }
+                    delete temp;
+                }
+                delete move;
+            }
         }
         return min_score;
     }
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            Move *move = new Move(i, j);
-            if (board->checkMove(move, side))
-            {
-                Board *temp = board->copy();
-                temp->doMove(move, side);
-                if (alpha > beta)
-                {
-                    continue;
-                }
-                else if (side == my_side) {
-                    int score = opp_move(temp, opp_side, depth + 1, beta, alpha);
-                    if (score > max_score) {
-                        max_score = score;
-                    }
-                }
-                else {
-                    int score = opp_move(temp, my_side, depth + 1, beta, alpha);
-                    if (score < min_score) {
-                        min_score = score;
-                    }
-                }
-                delete temp;
-            }
-            delete move;
-        }
-    }
-    if (side == my_side) {
-        if (max_score > alpha) {
-            alpha = max_score;
-            return max_score;
-        }
-        return alpha;
-    }
-    if (min_score > beta)
-    {
-        beta = min_score;
-    }
-    return min_score;
 }
