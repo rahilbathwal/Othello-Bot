@@ -11,7 +11,7 @@
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-
+    counter = 0;
     if (side == WHITE)
     {
         my_side = side;
@@ -35,6 +35,128 @@ Player::~Player() {
 /* Compute the board score using a basic heuristic which prioritises the
  * corner pieces.
  */
+
+int Player::CompleteHeuristic(Board *board, Move *move)
+{
+    Board *temp = board->copy();
+    temp->doMove(move, my_side);
+    double value = 0.0;
+
+    int position = board_score(temp, move);
+    int piece = Piece(temp, move);
+    double mobility = Mobility(temp, move);
+    double frontier = Frontier(temp, move);
+
+    if (counter < 50)
+    {
+        value += 2 * position + 0.05 * mobility - frontier - piece;
+    }
+    else
+    {
+		value += 2 * position + 0.05 * mobility + 0.4 * frontier + 0.4 * piece;
+    }
+
+    return value;
+}
+
+int Player::Piece(Board * board, Move *move)
+{
+	double pieceDiff;
+    int myCount, opCount;
+
+    if (my_side == WHITE)
+    {
+        myCount = board->countWhite();
+        opCount = board->countBlack();
+    }
+    else
+    {
+        myCount = board->countBlack();
+        opCount = board->countWhite();
+    }
+    
+    if (myCount + opCount != 0)
+    {
+       pieceDiff = 100 * (myCount - opCount) / (myCount + opCount);
+    }
+    else
+    {
+        pieceDiff = 0;
+    }
+    return pieceDiff;
+}
+
+double Player::Mobility(Board *board, Move *move)
+{
+	int myCount = 0;
+	int opCount = 0;
+	for (int i = 0; i < 8; i++)
+    {
+    	for (int j = 0; j < 8; j++)
+    	{
+            Move *move = new Move(i, j);
+            if (board->checkMove(move, my_side))
+            {
+                myCount++;
+            }
+            if (board->checkMove(move, opp_side))
+            {
+            	opCount++;
+            }
+            delete move;
+    	}
+    }
+    if (myCount + opCount != 0)
+    {
+        return (100.0 * (myCount - opCount) / (myCount + opCount));
+    }
+    else
+    {
+        return 0;
+    }   
+}
+
+double Player::Frontier(Board *board, Move *move)
+{
+	int xChanges[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+    int yChanges[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    int myCount = 0;
+    int opCount = 0;
+    double frontier;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            for (int k = 0; k < 8; k++)
+            {
+                int xCoord = i + xChanges[k];
+                int yCoord = j + yChanges[k];
+                if (xCoord >= 0 && xCoord <= 7 && yCoord >= 0 && yCoord <= 7)
+                {
+                    if (board->real_get(my_side, xCoord, yCoord))
+                    {
+                        myCount++;
+                        break;
+                    }
+                    else if (board->real_get(opp_side, xCoord, yCoord))
+                    {
+                        opCount++;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    if (myCount + opCount != 0)
+    {
+        frontier = 100 * (opCount - myCount) / (myCount + opCount);
+    }
+    else
+    {
+        frontier = 0;
+    }
+    return frontier;
+}
 
 int Player::board_score(Board *board, Move *move)
 {
@@ -95,6 +217,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         }
     }
     my_board->doMove(best_move, my_side);
+    counter++;
     return best_move;
 }
 
@@ -102,7 +225,8 @@ int Player::opp_move(Board *board, Move *move, Side side, int depth, int alpha, 
 {
     if (depth == 0)
     {
-        return board_score(board, move);
+    	//return board_score(board, move);
+        return CompleteHeuristic(board, move);
     }
     if (side == my_side)
     {
