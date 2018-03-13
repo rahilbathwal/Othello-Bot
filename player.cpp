@@ -33,23 +33,6 @@ Player::~Player() {
     delete my_board;
 }
 
-/*
- * Compute the board score using a heuristic which accounts for mobility,
- * frontier squares, position and piece count.
- */
-
-/*int Player::CompleteHeuristic(Board *board)
- {
- double value = 0.0;
- int position = Position(board);
- int piece = Piece(board);
- double mobility = Mobility(board);
- double frontier = Frontier(board);
- value += position + mobility - frontier - piece;
- return value;
- }*/
-
-
 int Player::CompleteHeuristic(Board *board)
 {
     int position = 0;
@@ -62,11 +45,7 @@ int Player::CompleteHeuristic(Board *board)
     int my_move = 0;
     int opp_move = 0;
     double mobility = 0.0;
-    int myCorners = 0;
-    int oppCorners = 0;
-    int myNextToCorner = 0;
-    int oppNextToCorner = 0;
-    int weights[8][8] = {{20,-3,11,8,8,11,-3,20},{-3, -7, -4, 1, 1, -4, -7, -3},{11, -4, 2, 2, 2, 2, -4, 11}, {8, 1, 2, -3, -3, 2, 1, 8},{8, 1, 2, -3, -3, 2, 1, 8},{11, -4, 2, 2, 2, 2, -4, 11}, {-3, -7, -4, 1, 1, -4, -7, -3}, {20,-3,11,8,8,11,-3,20}};
+    int weights[8][8] = {{100,1,5,5,5,5,1,100},{1,0,2,2,2,2,0,1},{5,2,6,6,6,6,2,5}, {5,2,6,7,7,6,2,5},{5,2,6,7,7,6,2,5},{5,2,6,6,6,6,2,5}, {1,0,2,2,2,2,0,1}, {100,1,5,5,5,5,1,100}};
     int xChanges[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
     int yChanges[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
     for (int i = 0; i < 8; i++) {
@@ -124,295 +103,10 @@ int Player::CompleteHeuristic(Board *board)
     {
         mobility = 0;
     }
-    if (board->real_get(my_side, 0, 0))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 0, 0))
-        oppCorners += 1;
-    if (board->real_get(my_side, 0, 7))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 0, 7))
-        oppCorners += 1;
-    if (board->real_get(my_side, 7, 0))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 7, 0))
-        oppCorners += 1;
-    if (board->real_get(my_side, 7, 7))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 7, 7))
-        oppCorners += 1;
-    if (board->real_get(my_side, 0, 0) == 0 && board->real_get(opp_side, 0, 0) == 0)
-    {
-        if (board->real_get(my_side, 0, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 0, 1))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 0))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 0))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 1))
-            oppNextToCorner += 1;
+    if (my + opp - 4 < 30) {
+        return 1 * position + 1 * mobility - 0.3 * frontier - 0.3 * pieces;
     }
-    if (board->real_get(my_side, 0, 7) == 0 && board->real_get(opp_side, 0, 7) == 0)
-    {
-        if (board->real_get(my_side, 0, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 0, 6))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 6))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 7))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 7))
-            oppNextToCorner += 1;
-    }
-    if (board->real_get(my_side, 7, 0) == 0 && board->real_get(opp_side, 7, 0) == 0)
-    {
-        if (board->real_get(my_side, 6, 0))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 0))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 6, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 1))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 7, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 7, 1))
-            oppNextToCorner += 1;
-    }
-    if (board->real_get(my_side, 7, 7) == 0 && board->real_get(opp_side, 7, 7) == 0)
-    {
-        if (board->real_get(my_side, 6, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 6))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 6, 7))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 7))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 7, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 7, 6))
-            oppNextToCorner += 1;
-    }
-    int corners = 25 * (myCorners - oppCorners);
-    double next_to_corner = -12.5 * (myNextToCorner - oppNextToCorner);
-    /*if (my + opp - 4 < 30) {
-        return 0.5 * position + 1 * mobility - 0.3 * frontier - 0.3 * pieces;
-    }
-    return 2 * position + 0.05 * mobility + 0.3 * frontier + pieces;*/
-    double value = 10 * pieces + 800 * corners + 380 * next_to_corner + 80 * mobility + 75 * frontier + 10 * position;
-    return value;
-}
-
-/*int Player::CornerChecks (Board *board)
-{
-    int myCorners = 0;
-    int oppCorners = 0;
-    int myNextToCorner = 0;
-    int oppNextToCorner = 0;
-    if (board->real_get(my_side, 0, 0))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 0, 0))
-        oppCorners += 1;
-    if (board->real_get(my_side, 0, 7))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 0, 7))
-        oppCorners += 1;
-    if (board->real_get(my_side, 7, 0))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 7, 0))
-        oppCorners += 1;
-    if (board->real_get(my_side, 7, 7))
-        myCorners += 1;
-    else if (board->real_get(opp_side, 7, 7))
-        oppCorners += 1;
-    if (board->real_get(my_side, 0, 0) == 0 && board->real_get(opp_side, 0, 0) == 0)
-    {
-        if (board->real_get(my_side, 0, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 0, 1))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 0))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 0))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 1))
-            oppNextToCorner += 1;
-    }
-    if (board->real_get(my_side, 0, 7) == 0 && board->real_get(opp_side, 0, 7) == 0)
-    {
-        if (board->real_get(my_side, 0, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 0, 6))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 6))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 1, 7))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 1, 7))
-            oppNextToCorner += 1;
-    }
-    if (board->real_get(my_side, 7, 0) == 0 && board->real_get(opp_side, 7, 0) == 0)
-    {
-        if (board->real_get(my_side, 6, 0))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 0))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 6, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 1))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 7, 1))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 7, 1))
-            oppNextToCorner += 1;
-    }
-    if (board->real_get(my_side, 7, 7) == 0 && board->real_get(opp_side, 7, 7) == 0)
-    {
-        if (board->real_get(my_side, 6, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 6))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 6, 7))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 6, 7))
-            oppNextToCorner += 1;
-        if (board->real_get(my_side, 7, 6))
-            myNextToCorner += 1;
-        else if (board->real_get(opp_side, 7, 6))
-            oppNextToCorner += 1;
-    }
-    int corners = 25 * (myCorners - oppCorners);
-    double next_to_corner = -12.5 * (myNextToCorner - oppNextToCorner);
-
-} */
-int Player::Piece(Board * board)
-{
-    double pieceDiff;
-    int myCount, opCount;
-
-    if (my_side == WHITE)
-    {
-        myCount = board->countWhite();
-        opCount = board->countBlack();
-    }
-    else
-    {
-        myCount = board->countBlack();
-        opCount = board->countWhite();
-    }
-
-    if (myCount + opCount != 0)
-    {
-        pieceDiff = 100 * (myCount - opCount) / (myCount + opCount);
-    }
-    else
-    {
-        pieceDiff = 0;
-    }
-    return pieceDiff;
-}
-
-double Player::Mobility(Board *board)
-{
-    int myCount = 0;
-    int opCount = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            Move *move = new Move(i, j);
-            if (board->checkMove(move, my_side))
-            {
-                myCount++;
-            }
-            if (board->checkMove(move, opp_side))
-            {
-                opCount++;
-            }
-            delete move;
-        }
-    }
-    if (myCount + opCount != 0)
-    {
-        return (100.0 * (myCount - opCount) / (myCount + opCount));
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-double Player::Frontier(Board *board)
-{
-    int xChanges[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
-    int yChanges[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
-    int myCount = 0;
-    int opCount = 0;
-    double frontier;
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            for (int k = 0; k < 8; k++)
-            {
-                int xCoord = i + xChanges[k];
-                int yCoord = j + yChanges[k];
-                if (xCoord >= 0 && xCoord <= 7 && yCoord >= 0 && yCoord <= 7)
-                {
-                    if (board->real_get(my_side, xCoord, yCoord))
-                    {
-                        myCount++;
-                        break;
-                    }
-                    else if (board->real_get(opp_side, xCoord, yCoord))
-                    {
-                        opCount++;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    if (myCount + opCount != 0)
-    {
-        frontier = 100 * (opCount - myCount) / (myCount + opCount);
-    }
-    else
-    {
-        frontier = 0;
-    }
-    return frontier;
-}
-
-/* Compute the board score for the algorithm using board positions */
-
-int Player::Position(Board *board)
-{
-    int score = 0;
-    int weights[8][8] = {{100,1,5,5,5,5,1,100},{1,0,2,2,2,2,0,1},{5,2,6,6,6,6,2,5}, {5,2,6,7,7,6,2,5},{5,2,6,7,7,6,2,5},{5,2,6,6,6,6,2,5},
-        {1,0,2,2,2,2,0,1}, {100,1,5,5,5,5,1,100}};
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            if (board->real_get(my_side, i, j) == 1) {
-                score += weights[i][j];
-            }
-            else if (board->real_get(opp_side, i, j) == 1) {
-                score -= weights[i][j];
-            }
-        }
-    }
-    return score;
+    return 2 * position + 0.05 * mobility + 0.3 * frontier + pieces;
 }
 
 /*
@@ -430,39 +124,43 @@ int Player::Position(Board *board)
  */
 
 Move *Player::doMove(Move *opponentsMove, int msLeft) {
-    int depth = 7;
+    int depth = 0;
+    if (msLeft <= 60000 && msLeft != -1) {
+        depth = 5;
+    }
+    else {
+        depth = 6;
+    }
     my_board->doMove(opponentsMove, opp_side);
-    if (my_board->hasMoves(my_side)) {
-        int alpha = INT_MIN;
-        int beta = INT_MAX;
-        int max_score = INT_MIN;
-        Move *best_move = nullptr;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Move *move = new Move(i, j);
-                if (my_board->checkMove(move, my_side)) {
-                    Board *temp = my_board->copy();
-                    temp->doMove(move, my_side);
-                    int score = alphabeta(temp, opp_side, depth, alpha, beta);
-                    if (score >= max_score)
-                    {
-                        delete best_move;
-                        max_score = score;
-                        best_move = move;
-                    }
-                    else {
-                        delete move;
-                    }
-                    delete temp;
+    int alpha = INT_MIN;
+    int beta = INT_MAX;
+    int max_score = INT_MIN;
+    Move *best_move = nullptr;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move *move = new Move(i, j);
+            if (my_board->checkMove(move, my_side)) {
+                Board *temp = my_board->copy();
+                temp->doMove(move, my_side);
+                int score = alphabeta(temp, opp_side, depth, alpha, beta);
+                if (score >= max_score)
+                {
+                    delete best_move;
+                    max_score = score;
+                    best_move = move;
                 }
                 else {
                     delete move;
                 }
+                delete temp;
+            }
+            else {
+                delete move;
             }
         }
-        my_board->doMove(best_move, my_side);
-        return best_move;
     }
+    my_board->doMove(best_move, my_side);
+    return best_move;
     return nullptr;
 }
 
@@ -474,54 +172,8 @@ int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
     }
     if (side == my_side)
     {
-        if (board->hasMoves(my_side)) {
-            std::vector<pair<int, Move*>> moves_list;
-            int max_score = INT_MIN;
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    Move *move = new Move(i, j);
-                    if (board->checkMove(move, side)) {
-                        Board *temp = board->copy();
-                        temp->doMove(move, side);
-                        int score = CompleteHeuristic(temp);
-                        moves_list.push_back(std::pair<int,Move*>(score,move));
-                        delete temp;
-                    }
-                    else {
-                        delete move;
-                    }
-                }
-            }
-            sort(moves_list.begin(), moves_list.end());
-            while (moves_list.size() > 0) {
-                Move *move = moves_list.back().second;
-                moves_list.pop_back();
-                Board *temp = board->copy();
-                temp->doMove(move, side);
-                int score = alphabeta(temp, opp_side, depth - 1, alpha, beta);
-                max_score = max(max_score, score);
-                alpha = max(max_score, alpha);
-                if (alpha >= beta) {
-                    delete move;
-                    delete temp;
-                    break;
-                }
-                delete temp;
-                delete move;
-            }
-            while (moves_list.size() > 0) {
-                Move *move = moves_list.back().second;
-                delete move;
-                moves_list.pop_back();
-            }
-            return max_score;
-        }
-        int score = alphabeta(board, opp_side, depth - 1, alpha, beta);
-        return score;
-    }
-    if (board->hasMoves(opp_side)) {
         std::vector<pair<int, Move*>> moves_list;
-        int min_score = INT_MAX;
+        int max_score = INT_MIN;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Move *move = new Move(i, j);
@@ -539,15 +191,14 @@ int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
         }
         sort(moves_list.begin(), moves_list.end());
         while (moves_list.size() > 0) {
-            Move *move = moves_list.front().second;
-            moves_list.erase(moves_list.begin());
+            Move *move = moves_list.back().second;
+            moves_list.pop_back();
             Board *temp = board->copy();
             temp->doMove(move, side);
-            int score = alphabeta(temp, my_side, depth - 1, alpha, beta);
-            min_score = min(min_score, score);
-            beta = min(min_score, beta);
-            if (beta <= alpha)
-            {
+            int score = alphabeta(temp, opp_side, depth - 1, alpha, beta);
+            max_score = max(max_score, score);
+            alpha = max(max_score, alpha);
+            if (alpha >= beta) {
                 delete move;
                 delete temp;
                 break;
@@ -560,8 +211,55 @@ int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
             delete move;
             moves_list.pop_back();
         }
-        return min_score;
+    if (max_score == INT_MIN) {
+        int score = alphabeta(board, opp_side, depth - 1, alpha, beta);
+        return score;
     }
-    int score = alphabeta(board, my_side, depth - 1, alpha, beta);
-    return score;
+    return max_score;
+    }
+    std::vector<pair<int, Move*>> moves_list;
+    int min_score = INT_MAX;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Move *move = new Move(i, j);
+            if (board->checkMove(move, side)) {
+                Board *temp = board->copy();
+                temp->doMove(move, side);
+                int score = CompleteHeuristic(temp);
+                moves_list.push_back(std::pair<int,Move*>(score,move));
+                delete temp;
+            }
+            else {
+                delete move;
+            }
+        }
+    }
+    sort(moves_list.begin(), moves_list.end());
+    while (moves_list.size() > 0) {
+        Move *move = moves_list.front().second;
+        moves_list.erase(moves_list.begin());
+        Board *temp = board->copy();
+        temp->doMove(move, side);
+        int score = alphabeta(temp, my_side, depth - 1, alpha, beta);
+        min_score = min(min_score, score);
+        beta = min(min_score, beta);
+        if (beta <= alpha)
+        {
+            delete move;
+            delete temp;
+            break;
+        }
+        delete temp;
+        delete move;
+    }
+    while (moves_list.size() > 0) {
+        Move *move = moves_list.back().second;
+        delete move;
+        moves_list.pop_back();
+    }
+    if (min_score == INT_MAX) {
+        int score = alphabeta(board, my_side, depth - 1, alpha, beta);
+        return score;
+    }
+    return min_score;
 }
