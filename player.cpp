@@ -69,7 +69,7 @@ int Player::CompleteHeuristic(Board *board)
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             if (board->real_get(my_side, i, j) == 1) {
-                
+
                 position += weights[i][j];
                 my++;
             }
@@ -121,7 +121,7 @@ int Player::CompleteHeuristic(Board *board)
         mobility = 0;
     }
     if (my + opp - 4 < 30) {
-        return 2.5 * position + 1 * mobility - 0.3 * frontier - 1 * pieces;
+        return 0.5 * position + 1 * mobility - 0.3 * frontier - 0.3 * pieces;
     }
     return 2 * position + 0.05 * mobility + 0.3 * frontier + pieces;
 }
@@ -130,7 +130,7 @@ int Player::Piece(Board * board)
 {
     double pieceDiff;
     int myCount, opCount;
-    
+
     if (my_side == WHITE)
     {
         myCount = board->countWhite();
@@ -141,7 +141,7 @@ int Player::Piece(Board * board)
         myCount = board->countBlack();
         opCount = board->countWhite();
     }
-    
+
     if (myCount + opCount != 0)
     {
         pieceDiff = 100 * (myCount - opCount) / (myCount + opCount);
@@ -395,4 +395,3 @@ int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
     int score = alphabeta(board, my_side, depth - 1, alpha, beta);
     return score;
 }
-
