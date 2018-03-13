@@ -1,8 +1,7 @@
 CC          = g++
-CFLAGS      = -std=c++11 -Wall -pedantic -ggdb
+CFLAGS      = -std=c++11 -Wall -pedantic -ggdb -O3
 OBJS        = player.o board.o
 PLAYERNAME  = viggy_fresh
-
 all: $(PLAYERNAME) testgame
 
 $(PLAYERNAME): $(OBJS) wrapper.o
