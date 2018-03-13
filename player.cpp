@@ -62,6 +62,10 @@ int Player::CompleteHeuristic(Board *board)
     int my_move = 0;
     int opp_move = 0;
     double mobility = 0.0;
+    int myCorners = 0;
+    int oppCorners = 0;
+    int myNextToCorner = 0;
+    int oppNextToCorner = 0;
     int weights[8][8] = {{1000,-100,5,5,5,5,-100,1000},{-100,-200,2,2,2,2,-200,-100},{5,2,6,6,6,6,2,5}, {5,2,6,7,7,6,2,5},{5,2,6,7,7,6,2,5},{5,2,6,6,6,6,2,5},
         {-100,-200,2,2,2,2,-200,-100}, {1000,-100,5,5,5,5,-100,1000}};
     int xChanges[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
@@ -77,6 +81,7 @@ int Player::CompleteHeuristic(Board *board)
                 position -= weights[i][j];
                 opp++;
             }
+
             for (int k = 0; k < 8; k++) {
                 int xCoord = i + xChanges[k];
                 int yCoord = j + yChanges[k];
@@ -120,12 +125,176 @@ int Player::CompleteHeuristic(Board *board)
     {
         mobility = 0;
     }
+    if (board->real_get(my_side, 0, 0))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 0, 0))
+        oppCorners += 1;
+    if (board->real_get(my_side, 0, 7))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 0, 7))
+        oppCorners += 1;
+    if (board->real_get(my_side, 7, 0))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 7, 0))
+        oppCorners += 1;
+    if (board->real_get(my_side, 7, 7))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 7, 7))
+        oppCorners += 1;
+    if (board->real_get(my_side, 0, 0) == 0 && board->real_get(opp_side, 0, 0) == 0)
+    {
+        if (board->real_get(my_side, 0, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 0, 1))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 0))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 0))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 1))
+            oppNextToCorner += 1;
+    }
+    if (board->real_get(my_side, 0, 7) == 0 && board->real_get(opp_side, 0, 7) == 0)
+    {
+        if (board->real_get(my_side, 0, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 0, 6))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 6))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 7))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 7))
+            oppNextToCorner += 1;
+    }
+    if (board->real_get(my_side, 7, 0) == 0 && board->real_get(opp_side, 7, 0) == 0)
+    {
+        if (board->real_get(my_side, 6, 0))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 0))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 6, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 1))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 7, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 7, 1))
+            oppNextToCorner += 1;
+    }
+    if (board->real_get(my_side, 7, 7) == 0 && board->real_get(opp_side, 7, 7) == 0)
+    {
+        if (board->real_get(my_side, 6, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 6))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 6, 7))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 7))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 7, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 7, 6))
+            oppNextToCorner += 1;
+    }
+    int corners = 25 * (myCorners - oppCorners);
+    double next_to_corner = -12.5 * (myNextToCorner - oppNextToCorner);
     if (my + opp - 4 < 30) {
         return 0.5 * position + 1 * mobility - 0.3 * frontier - 0.3 * pieces;
     }
     return 2 * position + 0.05 * mobility + 0.3 * frontier + pieces;
 }
 
+/*int Player::CornerChecks (Board *board)
+{
+    int myCorners = 0;
+    int oppCorners = 0;
+    int myNextToCorner = 0;
+    int oppNextToCorner = 0;
+    if (board->real_get(my_side, 0, 0))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 0, 0))
+        oppCorners += 1;
+    if (board->real_get(my_side, 0, 7))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 0, 7))
+        oppCorners += 1;
+    if (board->real_get(my_side, 7, 0))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 7, 0))
+        oppCorners += 1;
+    if (board->real_get(my_side, 7, 7))
+        myCorners += 1;
+    else if (board->real_get(opp_side, 7, 7))
+        oppCorners += 1;
+    if (board->real_get(my_side, 0, 0) == 0 && board->real_get(opp_side, 0, 0) == 0)
+    {
+        if (board->real_get(my_side, 0, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 0, 1))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 0))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 0))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 1))
+            oppNextToCorner += 1;
+    }
+    if (board->real_get(my_side, 0, 7) == 0 && board->real_get(opp_side, 0, 7) == 0)
+    {
+        if (board->real_get(my_side, 0, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 0, 6))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 6))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 1, 7))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 1, 7))
+            oppNextToCorner += 1;
+    }
+    if (board->real_get(my_side, 7, 0) == 0 && board->real_get(opp_side, 7, 0) == 0)
+    {
+        if (board->real_get(my_side, 6, 0))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 0))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 6, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 1))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 7, 1))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 7, 1))
+            oppNextToCorner += 1;
+    }
+    if (board->real_get(my_side, 7, 7) == 0 && board->real_get(opp_side, 7, 7) == 0)
+    {
+        if (board->real_get(my_side, 6, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 6))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 6, 7))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 6, 7))
+            oppNextToCorner += 1;
+        if (board->real_get(my_side, 7, 6))
+            myNextToCorner += 1;
+        else if (board->real_get(opp_side, 7, 6))
+            oppNextToCorner += 1;
+    }
+    int corners = 25 * (myCorners - oppCorners);
+    double next_to_corner = -12.5 * (myNextToCorner - oppNextToCorner); 
+
+} */
 int Player::Piece(Board * board)
 {
     double pieceDiff;
