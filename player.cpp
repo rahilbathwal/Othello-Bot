@@ -66,8 +66,7 @@ int Player::CompleteHeuristic(Board *board)
     int oppCorners = 0;
     int myNextToCorner = 0;
     int oppNextToCorner = 0;
-    int weights[8][8] = {{1000,-100,5,5,5,5,-100,1000},{-100,-200,2,2,2,2,-200,-100},{5,2,6,6,6,6,2,5}, {5,2,6,7,7,6,2,5},{5,2,6,7,7,6,2,5},{5,2,6,6,6,6,2,5},
-        {-100,-200,2,2,2,2,-200,-100}, {1000,-100,5,5,5,5,-100,1000}};
+    int weights[8][8] = {{20,-3,11,8,8,11,-3,20},{-3, -7, -4, 1, 1, -4, -7, -3},{11, -4, 2, 2, 2, 2, -4, 11}, {8, 1, 2, -3, -3, 2, 1, 8},{8, 1, 2, -3, -3, 2, 1, 8},{11, -4, 2, 2, 2, 2, -4, 11}, {-3, -7, -4, 1, 1, -4, -7, -3}, {20,-3,11,8,8,11,-3,20}};
     int xChanges[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
     int yChanges[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
     for (int i = 0; i < 8; i++) {
@@ -203,10 +202,12 @@ int Player::CompleteHeuristic(Board *board)
     }
     int corners = 25 * (myCorners - oppCorners);
     double next_to_corner = -12.5 * (myNextToCorner - oppNextToCorner);
-    if (my + opp - 4 < 30) {
+    /*if (my + opp - 4 < 30) {
         return 0.5 * position + 1 * mobility - 0.3 * frontier - 0.3 * pieces;
     }
-    return 2 * position + 0.05 * mobility + 0.3 * frontier + pieces;
+    return 2 * position + 0.05 * mobility + 0.3 * frontier + pieces;*/
+    double value = 10 * pieces + 800 * corners + 380 * next_to_corner + 80 * mobility + 75 * frontier + 10 * position;
+    return value;
 }
 
 /*int Player::CornerChecks (Board *board)
@@ -292,7 +293,7 @@ int Player::CompleteHeuristic(Board *board)
             oppNextToCorner += 1;
     }
     int corners = 25 * (myCorners - oppCorners);
-    double next_to_corner = -12.5 * (myNextToCorner - oppNextToCorner); 
+    double next_to_corner = -12.5 * (myNextToCorner - oppNextToCorner);
 
 } */
 int Player::Piece(Board * board)
