@@ -1,7 +1,9 @@
 #include "player.hpp"
 #include "board.hpp"
 #include <bitset>
-#include<limits.h>
+#include <limits.h>
+#include <vector>
+#include <algorithm>
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -11,7 +13,6 @@
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-    counter = 0;
     if (side == WHITE)
     {
         my_side = side;
@@ -44,15 +45,7 @@ int Player::CompleteHeuristic(Board *board)
     int piece = Piece(board);
     double mobility = Mobility(board);
     double frontier = Frontier(board);
-
-    if (counter < 20)
-    {
-        value += 2 * position + 0.05 * mobility - frontier - piece;
-    }
-    else
-    {
-		value += 2 * position + 0.05 * mobility + 0.4 * frontier + 0.4 * piece;
-    }
+    value += 1 * position + 1 * mobility - frontier - piece;
     return value;
 }
 
@@ -193,9 +186,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     int depth = 7;
     int alpha = INT_MIN;
     int beta = INT_MAX;
-    if (opponentsMove != nullptr) {
-        counter++;
-    }
     my_board->doMove(opponentsMove, opp_side);
     int max_score = INT_MIN;
     Move *best_move = nullptr;
@@ -223,7 +213,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         }
     }
     my_board->doMove(best_move, my_side);
-    counter++;
     return best_move;
 }
 
@@ -235,27 +224,44 @@ int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
     }
     if (side == my_side)
     {
+        std::vector<pair<int, Move*>> moves_list;
         int max_score = INT_MIN;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Move *move = new Move(i, j);
-                if (board->checkMove(move, side))
-                {
+                if (board->checkMove(move, side)) {
                     Board *temp = board->copy();
                     temp->doMove(move, side);
-                    int score = alphabeta(temp, opp_side, depth - 1, alpha, beta);
-                    max_score = max(max_score, score);
-                    alpha = max(max_score, alpha);
-                    if (alpha >= beta)
-                    {
-                        delete move;
-                        delete temp;
-                        return max_score;
-                    }
+                    int score = CompleteHeuristic(temp);
+                    moves_list.push_back(std::pair<int,Move*>(score,move));
                     delete temp;
                 }
-                delete move;
+                else {
+                    delete move;
+                }
             }
+        }
+        sort(moves_list.begin(), moves_list.end());
+        while (moves_list.size() > 0) {
+            Move *move = moves_list.back().second;
+            moves_list.pop_back();
+            Board *temp = board->copy();
+            temp->doMove(move, side);
+            int score = alphabeta(temp, opp_side, depth - 1, alpha, beta);
+            max_score = max(max_score, score);
+            alpha = max(max_score, alpha);
+            if (alpha >= beta) {
+                delete move;
+                delete temp;
+                break;
+            }
+            delete temp;
+            delete move;
+        }
+        while (moves_list.size() > 0) {
+            Move *move = moves_list.back().second;
+            delete move;
+            moves_list.pop_back();
         }
         if (max_score == INT_MIN) {
             int score = alphabeta(board, opp_side, depth - 1, alpha, beta);
@@ -264,6 +270,7 @@ int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
         return max_score;
     }
 
+    std::vector<pair<int, Move*>> moves_list;
     int min_score = INT_MAX;
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -271,21 +278,40 @@ int Player::alphabeta(Board *board, Side side, int depth, int alpha, int beta)
             if (board->checkMove(move, side)) {
                 Board *temp = board->copy();
                 temp->doMove(move, side);
-                int score = alphabeta(temp, my_side, depth - 1, alpha, beta);
-                min_score = min(min_score, score);
-                beta = min(min_score, beta);
-                if (beta <= alpha)
-                {
-                    delete move;
-                    delete temp;
-                    return min_score;
-                }
+                int score = CompleteHeuristic(temp);
+                moves_list.push_back(std::pair<int,Move*>(score,move));
                 delete temp;
             }
-            delete move;
+            else {
+                delete move;
+            }
         }
     }
+    sort(moves_list.begin(), moves_list.end());
+    reverse(moves_list.begin(), moves_list.end());
+    while (moves_list.size() > 0) {
+        Move *move = moves_list.back().second;
+        moves_list.pop_back();
+        Board *temp = board->copy();
+        temp->doMove(move, side);
+        int score = alphabeta(temp, my_side, depth - 1, alpha, beta);
+        min_score = min(min_score, score);
+        beta = min(min_score, beta);
+        if (beta <= alpha)
+        {
+            delete move;
+            delete temp;
+            break;
+        }
+        delete temp;
+        delete move;
+    }
 
+    while (moves_list.size() > 0) {
+        Move *move = moves_list.back().second;
+        delete move;
+        moves_list.pop_back();
+    }
     if (min_score == INT_MAX) {
         int score = alphabeta(board, my_side, depth - 1, alpha, beta);
         return score;
